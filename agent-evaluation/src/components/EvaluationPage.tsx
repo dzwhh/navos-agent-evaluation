@@ -302,8 +302,14 @@ export function EvaluationPage() {
       const questionRating = questionRatings.find(qr => qr.questionId === Number(questionId));
       const question = questions.find(q => q.id === Number(questionId));
       
-      if (!questionRating || !question || !user || !topicId) {
-        console.warn('缺少必要数据，跳过单题保存:', { questionRating: !!questionRating, question: !!question, user: !!user, topicId });
+      if (!questionRating || !question || !user || !user.username || !topicId) {
+        console.warn('缺少必要数据，跳过单题保存:', { 
+          questionRating: !!questionRating, 
+          question: !!question, 
+          user: !!user, 
+          username: user?.username,
+          topicId 
+        });
         return;
       }
 

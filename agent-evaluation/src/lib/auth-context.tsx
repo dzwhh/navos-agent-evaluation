@@ -7,7 +7,7 @@ import { supabase } from './supabase';
 interface AuthContextType {
   user: User | null;
   login: (username: string, password: string) => Promise<boolean>;
-  logout: () => void;
+  logout: () => Promise<void>;
   isAuthenticated: boolean;
   isAdmin: () => boolean;
 }
@@ -45,27 +45,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (username: string, password: string): Promise<boolean> => {
     try {
-      // 从数据库验证用户名和密码
-      const { data, error } = await supabase
-        .from('navos_user_info')
-        .select('*')
-        .eq('user_name', username)
-        .eq('password', password)
-        .single();
+      // 调用登录API
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      });
 
-      if (error) {
-        console.error('数据库查询错误:', error);
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('登录失败:', errorData.error);
         return false;
       }
 
-      if (data) {
-        // 将数据库字段映射到User类型
+      const data = await response.json();
+      if (data.user) {
+        // 将API返回的用户数据映射到User类型
         const user: User = {
-          id: (data as any).id.toString(),
-          username: (data as any).user_name,
-          password: (data as any).password,
-          role: (data as any).role || 'user',
-          createdAt: new Date((data as any).created_at || new Date()),
+          id: data.user.id.toString(),
+          username: data.user.username,
+          password: '', // 不存储密码
+          role: data.user.role || 'user',
+          createdAt: new Date(data.user.created_at || new Date()),
         };
         
         setUser(user);
@@ -82,8 +85,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
     try {
+      // 调用登出API
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+      });
+      
       setUser(null);
       setIsAuthenticated(false);
       localStorage.removeItem('evaluationUser');

@@ -112,7 +112,13 @@ export async function saveEvaluationToDatabase(data: EvaluationData): Promise<{ 
       if (!data.title) missingFields.push('title');
       if (!data.userName) missingFields.push('userName');
       const errorMsg = `缺少必要字段: ${missingFields.join(', ')}`;
-      console.error('❌ [DATABASE] 数据验证失败:', errorMsg, data);
+      console.error('❌ [DATABASE] 数据验证失败:', errorMsg);
+      console.error('❌ [DATABASE] 完整数据对象:', JSON.stringify(data, null, 2));
+      console.error('❌ [DATABASE] 字段详情:', {
+        qId: { value: data.qId, type: typeof data.qId, exists: !!data.qId },
+        title: { value: data.title, type: typeof data.title, exists: !!data.title },
+        userName: { value: data.userName, type: typeof data.userName, exists: !!data.userName }
+      });
       return { success: false, error: errorMsg };
     }
     

@@ -262,6 +262,67 @@ export const userTopicMappingAPI = {
   }
 };
 
+// 用户数据操作API函数
+export const userAPI = {
+  // 根据用户名获取用户信息
+  async getByUsername(username: string): Promise<Database['public']['Tables']['navos_user_info']['Row'] | null> {
+    console.log('Getting user by username:', username);
+    const { data, error } = await supabase
+      .from('navos_user_info')
+      .select('*')
+      .eq('user_name', username)
+      .single();
+    
+    if (error) {
+      console.error('Error getting user by username:', error);
+      // 如果没有找到用户，返回null而不是抛出错误
+      if (error.code === 'PGRST116') {
+        console.log('No user found with username:', username);
+        return null;
+      }
+      throw error;
+    }
+    
+    return data;
+  },
+
+  // 根据用户ID获取用户信息
+  async getById(userId: number): Promise<Database['public']['Tables']['navos_user_info']['Row'] | null> {
+    console.log('Getting user by ID:', userId);
+    const { data, error } = await supabase
+      .from('navos_user_info')
+      .select('*')
+      .eq('id', userId)
+      .single();
+    
+    if (error) {
+      console.error('Error getting user by ID:', error);
+      // 如果没有找到用户，返回null而不是抛出错误
+      if (error.code === 'PGRST116') {
+        console.log('No user found with ID:', userId);
+        return null;
+      }
+      throw error;
+    }
+    
+    return data;
+  },
+
+  // 更新用户最后登录时间
+  async updateLastLogin(userId: number): Promise<void> {
+    console.log('Updating last login for user:', userId);
+    const { error } = await supabase
+      .from('navos_user_info')
+      .update({ last_login: new Date().toISOString() })
+      .eq('id', userId);
+    
+    if (error) {
+      console.error('Error updating last login:', error);
+      throw error;
+    }
+  }
+};
+
 export type Database = {
   public: {
     Tables: {
