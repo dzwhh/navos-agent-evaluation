@@ -774,11 +774,7 @@ export function EvaluationPage() {
               <div>
                 <h1 className="text-3xl font-bold text-blue-800 mb-2">🤖 AI Agent 评测系统</h1>
                 <p className="text-blue-600">盲测评估 - 请根据答案质量进行客观评分</p>
-                {topicInfo && (
-                  <p className="text-sm text-blue-500 mt-1">
-                    当前题集: {topicInfo.name} (序号: {topicInfo.row_num})
-                  </p>
-                )}
+
               </div>
             </div>
             <div className="flex items-center space-x-6">

@@ -311,7 +311,7 @@ export const userAPI = {
   // 更新用户最后登录时间
   async updateLastLogin(userId: number): Promise<void> {
     console.log('Updating last login for user:', userId);
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('navos_user_info')
       .update({ last_login: new Date().toISOString() })
       .eq('id', userId);

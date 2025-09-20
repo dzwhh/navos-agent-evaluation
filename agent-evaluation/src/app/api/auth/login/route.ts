@@ -24,10 +24,10 @@ export async function POST(request: NextRequest) {
 
     // 验证密码
     let isValidPassword = false;
-    if (user.password.startsWith('$2')) {
+    if (user.password && user.password.startsWith('$2')) {
       // 哈希密码，使用 bcrypt 比较
       isValidPassword = await bcrypt.compare(password, user.password);
-    } else {
+    } else if (user.password) {
       // 明文密码，直接比较
       isValidPassword = password === user.password;
     }

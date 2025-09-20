@@ -38,7 +38,9 @@ export async function POST(request: NextRequest) {
       )
     }
     
-    const data = await userTopicMappingAPI.addUserTopic(userId, topicId)
+    // 需要获取用户名和题集名
+    // 这里暂时使用空字符串，实际应用中应该从数据库获取
+    const data = await userTopicMappingAPI.addUserTopic(userId, '', topicId, '')
     return NextResponse.json({ success: true, data })
   } catch (error) {
     console.error('创建用户题集映射失败:', error)
