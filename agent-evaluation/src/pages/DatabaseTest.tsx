@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { testSupabaseConnection, saveEvaluationToDatabase } from '../lib/database';
 
 const DatabaseTest: React.FC = () => {
-  const [testResult, setTestResult] = useState<any>(null);
-  const [writeResult, setWriteResult] = useState<any>(null);
+  const [testResult, setTestResult] = useState<{ success: boolean; error?: string; details?: unknown } | null>(null);
+  const [writeResult, setWriteResult] = useState<{ success: boolean; error?: string } | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleTestConnection = async () => {
@@ -31,7 +31,11 @@ const DatabaseTest: React.FC = () => {
         itemMajor: 4,
         itemData: 3,
         itemGuide: 5,
-        questionIndex: 0 // 这将分配 q_id = 1
+        questionIndex: 0, // 这将分配 q_id = 1
+        agentName: 'Test Model',
+        agentScene: 'test_scene',
+        topicId: 1,
+        userName: 'test_user'
       };
       
       const result = await saveEvaluationToDatabase(testData);

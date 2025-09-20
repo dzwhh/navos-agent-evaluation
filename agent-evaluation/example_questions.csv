@@ -1,0 +1,4 @@
+题目ID,题目名称,场景,MiniMax,Qwen,DeepSeek,ChatGPT,Manus,Navos
+Q001,如何实现快速排序算法,算法实现,https://example.com/minimax1,https://example.com/qwen1,https://example.com/deepseek1,https://example.com/chatgpt1,https://example.com/manus1,https://example.com/navos1
+Q002,解释机器学习中的过拟合现象,机器学习,https://example.com/minimax2,https://example.com/qwen2,https://example.com/deepseek2,https://example.com/chatgpt2,https://example.com/manus2,https://example.com/navos2
+Q003,设计一个RESTful API,系统设计,https://example.com/minimax3,https://example.com/qwen3,https://example.com/deepseek3,https://example.com/chatgpt3,https://example.com/manus3,https://example.com/navos3

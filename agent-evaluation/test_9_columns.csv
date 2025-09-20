@@ -1,0 +1,4 @@
+题目ID,题目名称,场景,MiniMax结果,Qwen结果,DeepSeek结果,ChatGPT结果,Manus结果,Navos结果
+1,测试题目1,对话场景,https://example.com/minimax1.jpg,https://example.com/qwen1.jpg,https://example.com/deepseek1.jpg,https://example.com/chatgpt1.jpg,https://example.com/manus1.jpg,https://example.com/navos1.jpg
+2,测试题目2,推理场景,https://example.com/minimax2.jpg,https://example.com/qwen2.jpg,https://example.com/deepseek2.jpg,https://example.com/chatgpt2.jpg,https://example.com/manus2.jpg,https://example.com/navos2.jpg
+3,测试题目3,创作场景,https://example.com/minimax3.jpg,https://example.com/qwen3.jpg,https://example.com/deepseek3.jpg,https://example.com/chatgpt3.jpg,https://example.com/manus3.jpg,https://example.com/navos3.jpg

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>数据库测试</title>
+</head>
+<body>
+    <h1>数据库写入测试</h1>
+    <button onclick="testDatabase()">测试数据库写入</button>
+    <div id="result"></div>
+    
+    <script>
+        async function testDatabase() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '正在测试...';
+            
+            try {
+                // 模拟评测数据
+                const testData = {
+                    qId: 1,
+                    qName: '测试题目1',
+                    title: '测试答案',
+                    agentType: '测试代理',
+                    itemVisual: 5,
+                    itemMajor: 4,
+                    itemData: 3,
+                    itemGuide: 4,
+                    agentName: '测试模型',
+                    agentScene: '测试场景',
+                    topicId: 1,
+                    userName: 'admin'
+                };
+                
+                console.log('发送测试数据:', testData);
+                
+                // 这里需要调用实际的数据库保存函数
+                // 由于是静态HTML，我们只能在控制台查看
+                resultDiv.innerHTML = '请查看浏览器控制台的输出结果';
+                
+            } catch (error) {
+                console.error('测试失败:', error);
+                resultDiv.innerHTML = '测试失败: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

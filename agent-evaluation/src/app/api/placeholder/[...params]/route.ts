@@ -2,10 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { params: string[] } }
+  { params }: { params: Promise<{ params: string[] }> }
 ) {
   // 从URL参数中获取宽度和高度
-  const [width = '600', height = '400'] = (await params).params;
+  const resolvedParams = await params;
+  const [width = '600', height = '400'] = resolvedParams.params;
   
   // 从查询参数中获取附加信息
   const searchParams = request.nextUrl.searchParams;

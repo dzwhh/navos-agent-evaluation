@@ -11,7 +11,7 @@ export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!username.trim() || !password.trim()) {
@@ -20,9 +20,9 @@ export default function LoginPage() {
     }
 
     try {
-      const success = login(username, password);
+      const success = await login(username, password);
       if (success) {
-        router.push('/');
+        router.push('/home');
       } else {
         setError('用户名或密码错误');
       }

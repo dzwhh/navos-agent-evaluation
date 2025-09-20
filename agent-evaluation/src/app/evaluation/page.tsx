@@ -3,18 +3,22 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
+import { EvaluationPage } from '@/components/EvaluationPage';
 
-export default function Home() {
+export default function EvaluationPageRoute() {
   const router = useRouter();
   const { user } = useAuth();
 
   useEffect(() => {
     if (!user) {
       router.push('/login');
-    } else {
-      router.push('/home');
     }
   }, [user, router]);
+
+  // 如果用户已登录，显示EvaluationPage组件
+  if (user) {
+    return <EvaluationPage />;
+  }
 
   // 如果用户未登录，显示加载状态
   return (

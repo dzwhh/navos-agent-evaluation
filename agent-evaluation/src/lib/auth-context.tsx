@@ -2,25 +2,19 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User } from '@/types/evaluation';
+import { supabase } from './supabase';
 
 interface AuthContextType {
   user: User | null;
-  login: (username: string, password: string) => boolean;
+  login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
   isAuthenticated: boolean;
+  isAdmin: () => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// 预定义的用户列表（实际项目中应该从数据库获取）
-const PREDEFINED_USERS: User[] = [
-  {
-    id: '1',
-    username: 'admin',
-    password: '123456',
-    createdAt: new Date('2023-01-01T00:00:00.000Z'),
-  }
-];
+
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -49,14 +43,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const login = (username: string, password: string): boolean => {
+  const login = async (username: string, password: string): Promise<boolean> => {
     try {
-      // 验证用户名和密码
-      const user = PREDEFINED_USERS.find(
-        u => u.username === username && u.password === password
-      );
+      // 从数据库验证用户名和密码
+      const { data, error } = await supabase
+        .from('navos_user_info')
+        .select('*')
+        .eq('user_name', username)
+        .eq('password', password)
+        .single();
 
-      if (user) {
+      if (error) {
+        console.error('数据库查询错误:', error);
+        return false;
+      }
+
+      if (data) {
+        // 将数据库字段映射到User类型
+        const user: User = {
+          id: (data as any).id.toString(),
+          username: (data as any).user_name,
+          password: (data as any).password,
+          role: (data as any).role || 'user',
+          createdAt: new Date((data as any).created_at || new Date()),
+        };
+        
         setUser(user);
         setIsAuthenticated(true);
         localStorage.setItem('evaluationUser', JSON.stringify(user));
@@ -82,8 +93,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const isAdmin = () => {
+    return user?.role === 'admin';
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, logout, isAuthenticated }}>
+    <AuthContext.Provider value={{ user, login, logout, isAuthenticated, isAdmin }}>
       {children}
     </AuthContext.Provider>
   );

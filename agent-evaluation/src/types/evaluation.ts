@@ -3,13 +3,60 @@ export interface User {
   id: string;
   username: string;
   password: string;
+  role?: string; // 用户角色：admin, user等
   createdAt: Date;
+  questionSets?: string[]; // 用户可访问的题目集ID列表
+}
+
+// 题目集数据类型定义
+export interface QuestionSet {
+  id: string;
+  name: string;
+  description: string;
+  questionCount: number;
+  createdAt: Date;
+}
+
+// 用户管理相关类型（已移动到下方统一定义）
+
+// 用户权限配置
+export interface UserPermission {
+  userId: string;
+  questionSetIds: string[];
+}
+
+// 数据库用户信息类型
+export interface DatabaseUser {
+  id: number;
+  user_name: string;
+  password: string;
+  role: string;
+  is_active: boolean;
+  created_at: string;
+}
+
+// 数据库用户题目映射类型
+export interface DatabaseUserTopicMapping {
+  user_id: string;
+  user_name: string;
+  topic_id: number;
+  topic_name: string;
+}
+
+export type UserInsertData = Omit<DatabaseUser, 'id' | 'created_at'>;
+export type UserTopicMappingInsertData = Omit<DatabaseUserTopicMapping, 'id'>;
+
+export interface UserFormData {
+  username: string;
+  password: string;
+  questionSets: number[];
 }
 
 // 评测题目的数据类型定义
 export interface EvaluationQuestion {
   id: number;
   title: string;
+  scenario?: string; // 题目场景信息
   answers: Answer[];
 }
 
@@ -19,6 +66,7 @@ export interface Answer {
   imageUrl: string;
   title: string;
   description?: string;
+  modelName?: string; // 实际模型名称
 }
 
 // 评分维度
@@ -58,6 +106,13 @@ export interface UserEvaluationResult {
 export interface EvaluationResult {
   questionRatings: QuestionRating[];
   completedAt?: Date;
+}
+
+// 评测数据类型
+export interface EvaluationData {
+  questions: EvaluationQuestion[];
+  currentQuestionIndex: number;
+  ratings: QuestionRating[];
 }
 
 // 评分维度定义

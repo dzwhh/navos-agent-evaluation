@@ -9,7 +9,7 @@ interface RatingStarsProps {
   dimension: string;
 }
 
-function RatingStars({ value, onChange, dimension }: RatingStarsProps) {
+function RatingStars({ value, onChange }: RatingStarsProps) {
   return (
     <div className="flex gap-0.5">
       {[1, 2, 3, 4, 5].map((rating) => (
@@ -45,7 +45,6 @@ interface AnswerRatingCardProps {
 }
 
 export function AnswerRatingCard({
-  answerId,
   answerTitle,
   dimensions,
   scores,
@@ -61,13 +60,10 @@ export function AnswerRatingCard({
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-blue-100 p-4 transform transition-all duration-300 hover:shadow-md">
-      {/* 答案标题和总分 - 粉密布局 */}
+      {/* 答案标题和总分 - 移除图标，使用结果X格式 */}
       <div className="flex flex-col items-center mb-4">
         <div className="flex items-center mb-2">
-          <div className="bg-gradient-to-r from-blue-200 to-cyan-200 text-blue-800 rounded-full w-6 h-6 flex items-center justify-center font-bold text-xs mr-2">
-            {answerTitle.slice(-1)}
-          </div>
-          <h4 className="font-bold text-lg text-gray-800">{answerTitle}</h4>
+          <h4 className="font-bold text-lg text-gray-800">结果{answerTitle}</h4>
         </div>
         <div className="bg-gradient-to-r from-blue-300 to-cyan-300 text-white rounded-lg px-3 py-1 shadow-sm">
           <div className="text-lg font-bold">{averageScore}</div>

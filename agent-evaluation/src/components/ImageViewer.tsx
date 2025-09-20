@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { Answer } from '@/types/evaluation';
 
 interface ImageViewerProps {
@@ -43,10 +44,11 @@ export function ImageViewer({ answer, onClick }: ImageViewerProps) {
               <p className="text-sm">图片加载失败</p>
             </div>
           ) : (
-            <img
+            <Image
               src={answer.imageUrl}
               alt={answer.title}
-              className={`w-full h-full object-cover transition-opacity duration-200 ${
+              fill
+              className={`object-cover transition-opacity duration-200 ${
                 isLoading ? 'opacity-0' : 'opacity-100'
               }`}
               onLoad={handleImageLoad}
@@ -85,6 +87,9 @@ interface ImageModalProps {
 }
 
 export function ImageModal({ answer, isOpen, onClose }: ImageModalProps) {
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
+
   if (!isOpen) return null;
 
   const handleBackdropClick = (e: React.MouseEvent) => {
@@ -93,19 +98,84 @@ export function ImageModal({ answer, isOpen, onClose }: ImageModalProps) {
     }
   };
 
+  const handleImageDoubleClick = () => {
+    onClose();
+  };
+
+  const handleImageLoad = () => {
+    setIsLoading(false);
+    setHasError(false);
+  };
+
+  const handleImageError = () => {
+    setIsLoading(false);
+    setHasError(true);
+  };
+
   return (
     <div 
-      className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeInUp"
+      className="fixed inset-0 bg-black/95 backdrop-blur-sm z-50 animate-fadeInUp"
       onClick={handleBackdropClick}
     >
-      <div className="relative max-w-none w-auto animate-scaleIn">
-        {/* 图片 */}
-        <div className="relative bg-white rounded-2xl shadow-elegant overflow-hidden">
-          <img
-            src={answer.imageUrl}
-            alt={answer.title}
-            className="w-auto h-auto object-contain"
-          />
+      {/* 关闭按钮 */}
+      <button
+        onClick={onClose}
+        className="absolute top-6 right-6 z-20 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white p-3 rounded-full transition-all duration-200 hover:scale-110 group"
+        aria-label="关闭图片"
+      >
+        <svg className="w-6 h-6 group-hover:rotate-90 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+
+      {/* 图片信息 */}
+      <div className="absolute top-4 left-4 z-10 bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-lg">
+        <h3 className="font-bold text-lg">{answer.title}</h3>
+        {answer.description && (
+          <p className="text-sm opacity-90">{answer.description}</p>
+        )}
+      </div>
+
+      {/* 滚动容器 - 支持原始尺寸图片滚动查看 */}
+      <div 
+        className="w-full h-full overflow-auto p-4 flex items-start justify-center"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="relative min-w-0 min-h-0">
+          {isLoading && (
+            <div className="absolute inset-0 flex items-center justify-center min-h-[200px] min-w-[200px]">
+              <div className="animate-spin rounded-full h-12 w-12 border-4 border-white/30 border-t-white"></div>
+            </div>
+          )}
+          
+          {hasError ? (
+            <div className="flex flex-col items-center justify-center bg-red-500/20 backdrop-blur-sm text-white p-8 rounded-lg min-h-[200px] min-w-[300px]">
+              <svg className="w-16 h-16 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <p className="text-lg font-semibold">图片加载失败</p>
+              <p className="text-sm opacity-75 mt-1">请检查图片链接或网络连接</p>
+            </div>
+          ) : (
+            <Image
+              src={answer.imageUrl}
+              alt={answer.title}
+              width={800}
+              height={600}
+              className={`block transition-opacity duration-300 cursor-pointer ${
+                isLoading ? 'opacity-0' : 'opacity-100'
+              }`}
+              onLoad={handleImageLoad}
+              onError={handleImageError}
+              onDoubleClick={handleImageDoubleClick}
+              style={{
+                maxWidth: 'none',
+                maxHeight: 'none',
+                width: 'auto',
+                height: 'auto'
+              }}
+            />
+          )}
         </div>
       </div>
     </div>
