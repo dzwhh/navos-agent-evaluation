@@ -269,7 +269,7 @@ export const userTopicMappingAPI = {
       .update({ 
         topic_id: newTopicId,
         topic_name: newTopicName
-      })
+      } as Database['public']['Tables']['navos_user_topic_mapping']['Update'])
       .eq('user_id', userId);
     
     if (error) {
