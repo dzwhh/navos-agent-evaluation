@@ -3,7 +3,7 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
-import { Settings } from 'lucide-react';
+import { Settings, BarChart3 } from 'lucide-react';
 
 export default function HomePage() {
   const router = useRouter();
@@ -36,14 +36,24 @@ export default function HomePage() {
             <div className="flex items-center space-x-4">
               <span className="text-gray-600">欢迎，{user?.username || '用户'}</span>
               {isAdmin() && (
-                <button
-                  onClick={() => router.push('/user-management')}
-                  className="flex items-center space-x-1 px-3 py-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200"
-                  title="用户管理"
-                >
-                  <Settings className="w-4 h-4" />
-                  <span className="text-sm">用户管理</span>
-                </button>
+                <>
+                  <button
+                    onClick={() => router.push('/user-management')}
+                    className="flex items-center space-x-1 px-3 py-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200"
+                    title="用户管理"
+                  >
+                    <Settings className="w-4 h-4" />
+                    <span className="text-sm">用户管理</span>
+                  </button>
+                  <button
+                    onClick={() => router.push('/dashboard')}
+                    className="flex items-center space-x-1 px-3 py-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200"
+                    title="Dashboard"
+                  >
+                    <BarChart3 className="w-4 h-4" />
+                    <span className="text-sm">Dashboard</span>
+                  </button>
+                </>
               )}
               <button 
                 onClick={() => router.push('/login')}

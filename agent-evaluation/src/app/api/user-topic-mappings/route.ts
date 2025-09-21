@@ -51,6 +51,30 @@ export async function POST(request: NextRequest) {
   }
 }
 
+// PUT - 更新用户题集映射
+export async function PUT(request: NextRequest) {
+  try {
+    const body = await request.json()
+    const { userId, topicId, topicName } = body
+    
+    if (!userId || !topicId) {
+      return NextResponse.json(
+        { success: false, error: '用户ID和题集ID不能为空' },
+        { status: 400 }
+      )
+    }
+    
+    await userTopicMappingAPI.updateUserTopicId(parseInt(userId), parseInt(topicId), topicName || '')
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('更新用户题集映射失败:', error)
+    return NextResponse.json(
+      { success: false, error: '更新用户题集映射失败' },
+      { status: 500 }
+    )
+  }
+}
+
 // DELETE - 删除用户题集映射
 export async function DELETE(request: NextRequest) {
   try {

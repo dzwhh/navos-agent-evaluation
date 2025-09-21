@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug User Status</title>
+</head>
+<body>
+    <h1>用户状态调试</h1>
+    <div id="output"></div>
+    
+    <script>
+        function debugUserStatus() {
+            const output = document.getElementById('output');
+            let html = '';
+            
+            // 检查localStorage中的用户信息
+            const storedUser = localStorage.getItem('evaluationUser');
+            html += '<h2>LocalStorage中的用户信息:</h2>';
+            if (storedUser) {
+                try {
+                    const user = JSON.parse(storedUser);
+                    html += '<pre>' + JSON.stringify(user, null, 2) + '</pre>';
+                } catch (e) {
+                    html += '<p>解析用户信息失败: ' + e.message + '</p>';
+                }
+            } else {
+                html += '<p>未找到用户信息</p>';
+            }
+            
+            // 检查cookies
+            html += '<h2>Cookies:</h2>';
+            html += '<pre>' + document.cookie + '</pre>';
+            
+            // 测试API调用
+            html += '<h2>API测试:</h2>';
+            fetch('/api/auth/me')
+                .then(response => response.json())
+                .then(data => {
+                    html += '<h3>用户认证状态:</h3>';
+                    html += '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                    output.innerHTML = html;
+                })
+                .catch(error => {
+                    html += '<p>API调用失败: ' + error.message + '</p>';
+                    output.innerHTML = html;
+                });
+            
+            output.innerHTML = html;
+        }
+        
+        // 页面加载后执行调试
+        window.onload = debugUserStatus;
+    </script>
+</body>
+</html>

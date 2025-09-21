@@ -259,6 +259,23 @@ export const userTopicMappingAPI = {
     }
     
     return (data as any)?.topic_id || null;
+  },
+
+  // 更新用户题目集映射的topic_id
+  async updateUserTopicId(userId: number, newTopicId: number, newTopicName: string): Promise<void> {
+    console.log('Updating topic_id for user:', { userId, newTopicId, newTopicName });
+    const { error } = await supabase
+      .from('navos_user_topic_mapping')
+      .update({ 
+        topic_id: newTopicId,
+        topic_name: newTopicName
+      })
+      .eq('user_id', userId);
+    
+    if (error) {
+      console.error('Error updating user topic_id:', error);
+      throw error;
+    }
   }
 };
 

@@ -20,12 +20,12 @@ export default function EvaluationPageRoute() {
     return <EvaluationPage />;
   }
 
-  // 如果用户未登录，显示加载状态
+  // 如果用户未认证，显示加载状态
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
       <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-        <p className="text-gray-600">正在跳转...</p>
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        <p className="text-gray-600">加载中...</p>
       </div>
     </div>
   );

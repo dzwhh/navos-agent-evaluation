@@ -196,26 +196,21 @@ export function EvaluationPage() {
   useEffect(() => {
     const loadUserTopicData = async () => {
       if (!user) {
-        console.log('⚠️ 用户未登录，等待用户信息');
         return;
       }
       
       try {
-        console.log('🔍 开始获取用户对应的topic_id，用户ID:', user.id);
-        
         // 从数据库获取用户对应的topic_id
         const userTopicId = await userTopicMappingAPI.getUserTopicId(Number(user.id));
         
         if (userTopicId) {
-          console.log('✅ 获取到用户对应的topic_id:', userTopicId);
           setTopicId(userTopicId);
           loadQuestionsByTopicId(userTopicId);
         } else {
-          console.error('❌ 未找到用户对应的题集映射');
           setLoadError('未找到您对应的题集，请联系管理员分配题集权限');
         }
       } catch (error) {
-        console.error('❌ 获取用户题集映射失败:', error);
+        console.error('获取用户题集映射失败:', error);
         setLoadError('获取题集信息失败，请稍后重试');
       }
     };
@@ -225,11 +220,8 @@ export function EvaluationPage() {
 
   // 处理登出逻辑
   const handleLogout = () => {
-    console.log('开始登出流程');
     try {
       logout();
-      console.log('登出成功，跳转到登录页面');
-      // 使用完整的相对路径
       router.push('/login');
     } catch (error) {
       console.error('登出过程中发生错误:', error);
@@ -245,23 +237,8 @@ export function EvaluationPage() {
 
   const currentQuestion = questions[currentQuestionIndex];
   
-  // 添加调试日志
-  console.log('🎯 当前组件状态:', {
-    isLoadingTopic,
-    loadError,
-    questionsLength: questions.length,
-    currentQuestionIndex,
-    topicId,
-    currentQuestion: currentQuestion ? {
-      id: currentQuestion.id,
-      title: currentQuestion.title,
-      answersCount: currentQuestion.answers.length
-    } : null
-  });
-  
   // 如果没有当前题目，显示加载状态
   if (!currentQuestion && !isLoadingTopic && !loadError) {
-    console.log('⚠️ 没有当前题目，但不在加载状态');
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
         <div className="text-center">
@@ -653,11 +630,13 @@ export function EvaluationPage() {
 
   // 如果用户未认证，显示加载状态
   if (!user) {
+    console.log('🔍 用户未认证，显示加载状态');
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-blue-600">正在验证用户身份...</p>
+          <p className="text-sm text-gray-500 mt-2">调试信息：用户状态为空</p>
         </div>
       </div>
     );
