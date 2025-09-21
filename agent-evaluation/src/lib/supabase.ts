@@ -264,12 +264,13 @@ export const userTopicMappingAPI = {
   // 更新用户题目集映射的topic_id
   async updateUserTopicId(userId: number, newTopicId: number, newTopicName: string): Promise<void> {
     console.log('Updating topic_id for user:', { userId, newTopicId, newTopicName });
-    const { error } = await supabase
+    
+    const { error } = await (supabase as any)
       .from('navos_user_topic_mapping')
-      .update({ 
+      .update({
         topic_id: newTopicId,
         topic_name: newTopicName
-      } as Database['public']['Tables']['navos_user_topic_mapping']['Update'])
+      })
       .eq('user_id', userId);
     
     if (error) {
