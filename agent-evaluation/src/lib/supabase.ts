@@ -188,6 +188,26 @@ export const userTopicMappingAPI = {
     }
   },
 
+  // Upsert用户题目集权限（以user_id为主键）
+  async upsertUserTopic(userId: number, userName: string, topicId: number, topicName: string): Promise<void> {
+    console.log('Upserting topic permission:', { userId, userName, topicId, topicName });
+    const { error } = await (supabase as any)
+      .from('navos_user_topic_mapping')
+      .upsert({
+        user_id: userId,
+        user_name: userName,
+        topic_id: topicId,
+        topic_name: topicName
+      }, {
+        onConflict: 'user_id'
+      });
+    
+    if (error) {
+      console.error('Error upserting user topic:', error);
+      throw error;
+    }
+  },
+
   // 删除用户题目集权限
   async removeUserTopic(userId: number, topicId: number): Promise<void> {
     console.log('Removing topic permission:', { userId, topicId });

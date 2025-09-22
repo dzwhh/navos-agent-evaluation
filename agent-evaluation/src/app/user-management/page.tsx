@@ -54,9 +54,9 @@ export default function UserManagementPage() {
   const [editingCell, setEditingCell] = useState<{userId: string, field: string} | null>(null);
   const [editingValues, setEditingValues] = useState<{[key: string]: string}>({});
   
-  // 多选组件状态管理
+  // 单选组件状态管理
   const [openDropdowns, setOpenDropdowns] = useState<{[key: string]: boolean}>({});
-  const [selectedTopics, setSelectedTopics] = useState<{[userId: string]: number[]}>({});
+  const [selectedTopics, setSelectedTopics] = useState<{[userId: string]: number}>({});
 
   // 加载题目集数据
   const loadTopicOptions = async () => {
@@ -86,15 +86,13 @@ export default function UserManagementPage() {
       const data = await userTopicMappingAPI.getAllMappings();
       setUserTopicMappings(data || []);
       
-      // 构建用户选中的题目集映射
-      const userTopicsMap: {[userId: string]: number[]} = {};
+      // 构建用户选中的题目集映射（单选模式）
+      const userTopicsMap: {[userId: string]: number} = {};
       data?.forEach(mapping => {
         if (mapping.user_id !== null && mapping.topic_id !== null) {
           const userId = mapping.user_id.toString();
-          if (!userTopicsMap[userId]) {
-            userTopicsMap[userId] = [];
-          }
-          userTopicsMap[userId].push(mapping.topic_id);
+          // 单选模式：每个用户只保留一个题目集（取最新的）
+          userTopicsMap[userId] = mapping.topic_id;
         }
       });
       setSelectedTopics(userTopicsMap);
@@ -203,20 +201,24 @@ export default function UserManagementPage() {
     }
   };
 
-  // 处理题目集选择
-  const handleTopicSelection = async (userId: string, topicId: number, isSelected: boolean) => {
+  // 处理题目集选择（单选模式）
+  const handleTopicSelection = async (userId: string, topicId: number | null, isSelected: boolean) => {
     try {
-      if (isSelected) {
-        // 添加题目集权限
-        const user = users.find(u => u.id === userId);
+      const user = users.find(u => u.id === userId);
+      if (!user) {
+        toast.error('用户信息不存在');
+        return;
+      }
+
+      if (topicId && isSelected) {
+        // 使用upsert操作更新题目集权限
         const topic = topicOptions.find(t => t.id === topicId);
-        
-        if (!user || !topic) {
-          toast.error('用户或题目集信息不存在');
+        if (!topic) {
+          toast.error('题目集信息不存在');
           return;
         }
 
-        await userTopicMappingAPI.addUserTopic(
+        await userTopicMappingAPI.upsertUserTopic(
           parseInt(userId),
           user.username,
           topicId,
@@ -226,25 +228,35 @@ export default function UserManagementPage() {
         // 更新本地状态
         setSelectedTopics(prev => ({
           ...prev,
-          [userId]: [...(prev[userId] || []), topicId]
+          [userId]: topicId
         }));
         
-        toast.success('题目集权限添加成功');
+        toast.success('题目集权限设置成功');
       } else {
-        // 删除题目集权限
-        await userTopicMappingAPI.removeUserTopic(
-          parseInt(userId),
-          topicId
-        );
+        // 删除用户的题目集权限
+        const { error } = await supabase
+          .from('navos_user_topic_mapping')
+          .delete()
+          .eq('user_id', parseInt(userId));
 
-        // 更新本地状态
-        setSelectedTopics(prev => ({
-          ...prev,
-          [userId]: (prev[userId] || []).filter(id => id !== topicId)
-        }));
+        if (error) {
+          console.error('Error removing user topic:', error);
+          toast.error('清除权限失败: ' + error.message);
+          return;
+        }
+
+        // 清除选择
+        setSelectedTopics(prev => {
+          const newState = { ...prev };
+          delete newState[userId];
+          return newState;
+        });
         
-        toast.success('题目集权限删除成功');
+        toast.success('题目集权限已清除');
       }
+
+      // 关闭下拉菜单
+      setOpenDropdowns(prev => ({ ...prev, [userId]: false }));
     } catch (error) {
       console.error('Error handling topic selection:', error);
       toast.error('操作失败: ' + (error instanceof Error ? error.message : '未知错误'));
@@ -288,22 +300,26 @@ export default function UserManagementPage() {
 
       console.log('✅ 用户添加成功:', data);
       
-      // 如果选择了题目集，添加权限映射
+      // 如果选择了题目集，添加权限映射（单选模式）
       if (newUserData.accessibleTopics.length > 0) {
-        const mappingPromises = newUserData.accessibleTopics.map(topicId => {
-          const topic = topicOptions.find(t => t.id === topicId);
-          const mappingData: UserTopicMappingInsertData = {
-            user_id: (data as any).id,
-            user_name: newUserData.username.trim(),
-            topic_id: topicId,
-            topic_name: topic?.name || ''
-          };
-          return supabase
-            .from('navos_user_topic_mapping')
-            .insert(mappingData as any);
-        });
+        const topicId = newUserData.accessibleTopics[0]; // 单选模式只取第一个
+        const topic = topicOptions.find(t => t.id === topicId);
+        const mappingData: UserTopicMappingInsertData = {
+          user_id: (data as any).id,
+          user_name: newUserData.username.trim(),
+          topic_id: topicId,
+          topic_name: topic?.name || ''
+        };
         
-        await Promise.all(mappingPromises);
+        const { error: mappingError } = await supabase
+          .from('navos_user_topic_mapping')
+          .insert(mappingData as any);
+          
+        if (mappingError) {
+          console.error('Error adding topic mapping:', mappingError);
+          toast.error('添加题目集权限失败: ' + mappingError.message);
+          return;
+        }
       }
       
       toast.success('用户添加成功!');
@@ -438,20 +454,19 @@ export default function UserManagementPage() {
   // };
 
   const isTopicSelected = (userId: string, topicId: number) => {
-    return selectedTopics[userId]?.includes(topicId) || false;
+    return selectedTopics[userId] === topicId;
   };
 
-  const getSelectedTopicNames = (userId: string) => {
-    const userTopics = selectedTopics[userId] || [];
-    return userTopics.map(topicId => {
-      const topic = topicOptions.find(t => t.id === topicId);
-      return topic?.name || '';
-    }).filter(name => name);
+  const getSelectedTopicName = (userId: string) => {
+    const selectedTopicId = selectedTopics[userId];
+    if (!selectedTopicId) return null;
+    const topic = topicOptions.find(t => t.id === selectedTopicId);
+    return topic?.name || null;
   };
 
-  // 多选组件渲染
-  const renderTopicMultiSelect = (userId: string) => {
-    const selectedNames = getSelectedTopicNames(userId);
+  // 单选组件渲染
+  const renderTopicSingleSelect = (userId: string) => {
+    const selectedName = getSelectedTopicName(userId);
     const isOpen = openDropdowns[userId] || false;
 
     return (
@@ -461,12 +476,10 @@ export default function UserManagementPage() {
           onClick={() => toggleDropdown(userId)}
         >
           <div className="flex-1 text-sm text-gray-700">
-            {selectedNames.length === 0 ? (
-              <span className="text-gray-400">选择题目集</span>
-            ) : selectedNames.length === 1 ? (
-              selectedNames[0]
+            {selectedName ? (
+              selectedName
             ) : (
-              `已选择 ${selectedNames.length} 个题目集`
+              <span className="text-gray-400">选择题目集</span>
             )}
           </div>
           <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${
@@ -476,6 +489,15 @@ export default function UserManagementPage() {
 
         {isOpen && (
           <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+            {/* 添加清除选择选项 */}
+            <div
+              className="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer border-b border-gray-100"
+              onClick={() => {
+                handleTopicSelection(userId, null, false);
+              }}
+            >
+              <span className="text-sm text-gray-500">清除选择</span>
+            </div>
             {topicOptions.length === 0 ? (
               <div className="px-3 py-2 text-sm text-gray-500">暂无题目集</div>
             ) : (
@@ -484,16 +506,18 @@ export default function UserManagementPage() {
                 return (
                   <div
                     key={topic.id}
-                    className="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer"
+                    className={`flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer ${
+                      isSelected ? 'bg-blue-50' : ''
+                    }`}
                     onClick={() => {
-                      handleTopicSelection(userId, topic.id, !isSelected);
+                      handleTopicSelection(userId, topic.id, true);
                     }}
                   >
                     <input
-                      type="checkbox"
+                      type="radio"
                       checked={isSelected}
                       onChange={() => {}}
-                      className="mr-2 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      className="mr-2 text-blue-600 focus:ring-blue-500 border-gray-300"
                     />
                     <span className="text-sm text-gray-700">{topic.name}</span>
                   </div>
@@ -506,12 +530,10 @@ export default function UserManagementPage() {
     );
   };
 
-  // 新用户添加时的多选组件
-  const renderNewUserTopicMultiSelect = () => {
-    const selectedNames = newUserData.accessibleTopics.map(topicId => {
-      const topic = topicOptions.find(t => t.id === topicId);
-      return topic?.name || '';
-    }).filter(name => name);
+  // 新用户添加时的单选组件
+  const renderNewUserTopicSingleSelect = () => {
+    const selectedTopicId = newUserData.accessibleTopics[0] || null;
+    const selectedName = selectedTopicId ? topicOptions.find(t => t.id === selectedTopicId)?.name : null;
     const isOpen = openDropdowns['newUser'] || false;
 
     return (
@@ -521,12 +543,10 @@ export default function UserManagementPage() {
           onClick={() => toggleDropdown('newUser')}
         >
           <div className="flex-1 text-sm text-gray-700">
-            {selectedNames.length === 0 ? (
-              <span className="text-gray-400">选择题目集</span>
-            ) : selectedNames.length === 1 ? (
-              selectedNames[0]
+            {selectedName ? (
+              selectedName
             ) : (
-              `已选择 ${selectedNames.length} 个题目集`
+              <span className="text-gray-400">选择题目集</span>
             )}
           </div>
           <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${
@@ -536,34 +556,43 @@ export default function UserManagementPage() {
 
         {isOpen && (
           <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+            {/* 添加清除选择选项 */}
+            <div
+              className="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer border-b border-gray-100"
+              onClick={() => {
+                setNewUserData(prev => ({
+                  ...prev,
+                  accessibleTopics: []
+                }));
+                setOpenDropdowns(prev => ({ ...prev, newUser: false }));
+              }}
+            >
+              <span className="text-sm text-gray-500">清除选择</span>
+            </div>
             {topicOptions.length === 0 ? (
               <div className="px-3 py-2 text-sm text-gray-500">暂无题目集</div>
             ) : (
               topicOptions.map(topic => {
-                const isSelected = newUserData.accessibleTopics.includes(topic.id);
+                const isSelected = selectedTopicId === topic.id;
                 return (
                   <div
                     key={topic.id}
-                    className="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer"
+                    className={`flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer ${
+                      isSelected ? 'bg-blue-50' : ''
+                    }`}
                     onClick={() => {
-                      if (isSelected) {
-                        setNewUserData(prev => ({
-                          ...prev,
-                          accessibleTopics: prev.accessibleTopics.filter(id => id !== topic.id)
-                        }));
-                      } else {
-                        setNewUserData(prev => ({
-                          ...prev,
-                          accessibleTopics: [...prev.accessibleTopics, topic.id]
-                        }));
-                      }
+                      setNewUserData(prev => ({
+                        ...prev,
+                        accessibleTopics: [topic.id]
+                      }));
+                      setOpenDropdowns(prev => ({ ...prev, newUser: false }));
                     }}
                   >
                     <input
-                      type="checkbox"
+                      type="radio"
                       checked={isSelected}
                       onChange={() => {}}
-                      className="mr-2 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      className="mr-2 text-blue-600 focus:ring-blue-500 border-gray-300"
                     />
                     <span className="text-sm text-gray-700">{topic.name}</span>
                   </div>
@@ -710,7 +739,7 @@ export default function UserManagementPage() {
                         新用户
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        {renderNewUserTopicMultiSelect()}
+                        {renderNewUserTopicSingleSelect()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex space-x-2">
@@ -799,7 +828,7 @@ export default function UserManagementPage() {
                           {user.createdAt.toLocaleDateString()}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          {renderTopicMultiSelect(user.id)}
+                          {renderTopicSingleSelect(user.id)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex space-x-2">
