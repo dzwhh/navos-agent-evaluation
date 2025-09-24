@@ -808,10 +808,10 @@ export function EvaluationPage() {
         </div>
       </div>
 
-      <div className="max-w-[1600px] mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-6 gap-8">
+      <div className="max-w-[1200px] mx-auto px-6 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-8 gap-8">
           {/* 主内容区域：题目、答案和评分 */}
-          <div className="lg:col-span-5 animate-fadeInUp">
+          <div className="lg:col-span-6 pb-32 lg:pb-8 animate-fadeInUp">
             {/* 题目 */}
             <div className="bg-white rounded-xl shadow-sm border border-blue-100 p-8 mb-8 relative overflow-hidden animate-scaleIn">
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-200 to-cyan-200"></div>
@@ -896,8 +896,9 @@ export function EvaluationPage() {
             </div>
           </div>
 
-          {/* 右侧：进度和导航区域 */}
-          <div className="lg:col-span-1 space-y-6 animate-fadeInUp" style={{ animationDelay: '0.3s' }}>
+          {/* 右侧：进度和导航区域 - 粘性定位 */}
+          <div className="lg:col-span-2 hidden lg:block">
+            <div className="sticky top-6 space-y-6 animate-fadeInUp z-40" style={{ animationDelay: '0.3s' }}>
             {/* 进度信息 */}
             <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl shadow-sm p-6 border border-blue-100">
               <h3 className="font-bold text-gray-800 mb-4">📈 评分进度</h3>
@@ -916,7 +917,7 @@ export function EvaluationPage() {
                 <button
                   onClick={goToPreviousQuestion}
                   disabled={currentQuestionIndex === 0}
-                  className="w-full px-6 py-3 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 rounded-lg hover:from-gray-200 hover:to-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-semibold shadow-soft transform hover:scale-105"
+                  className="w-full px-4 py-3 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 rounded-lg hover:from-gray-200 hover:to-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-semibold shadow-soft transform hover:scale-105"
                 >
                   ← 上一题
                 </button>
@@ -925,7 +926,7 @@ export function EvaluationPage() {
                   <button
                     onClick={goToNextQuestion}
                     disabled={!isCurrentQuestionComplete()}
-                    className={`w-full px-6 py-3 rounded-lg transition-all duration-200 font-semibold shadow-elegant transform hover:scale-105 ${
+                    className={`w-full px-4 py-3 rounded-lg transition-all duration-200 font-semibold shadow-elegant transform hover:scale-105 ${
                       isCurrentQuestionComplete()
                         ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:from-cyan-600 hover:to-blue-700'
                         : 'bg-gray-300 text-gray-500 cursor-not-allowed'
@@ -937,7 +938,7 @@ export function EvaluationPage() {
                 ) : (
                   <button
                     onClick={submitEvaluation}
-                    className="w-full px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all duration-200 font-semibold shadow-elegant transform hover:scale-105"
+                    className="w-full px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all duration-200 font-semibold shadow-elegant transform hover:scale-105"
                   >
                     ✓ 提交评测
                   </button>
@@ -954,7 +955,7 @@ export function EvaluationPage() {
                   </div>
                   <h4 className="text-sm font-bold text-gray-900">⚡ 快速跳转</h4>
                 </div>
-                <div className="grid grid-cols-4 gap-4">
+                <div className="grid grid-cols-6 gap-2">
                   {questions.map((_, index) => {
                     const isCompleted = questionRatings.find(qr => qr.questionId === questions[index].id)?.answerRatings.every(ar => 
                       ar.scores.length === SCORE_DIMENSIONS.length && 
@@ -971,6 +972,89 @@ export function EvaluationPage() {
                             : isCompleted
                             ? 'bg-gradient-to-r from-red-100 to-red-200 text-red-800 hover:from-red-200 hover:to-red-300 border border-red-200'
                             : 'bg-gradient-to-r from-blue-50 to-cyan-50 text-blue-700 hover:from-blue-100 hover:to-cyan-100 border border-blue-100'
+                        }`}
+                      >
+                        {index + 1}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+            </div>
+          </div>
+
+          {/* 移动端导航区域 - 底部固定 */}
+          <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-40 lg:hidden shadow-lg">
+            <div className="flex items-center justify-between max-w-md mx-auto">
+              {/* 上一题按钮 */}
+              <button
+                onClick={goToPreviousQuestion}
+                disabled={currentQuestionIndex === 0}
+                className="flex-1 px-4 py-2 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 rounded-lg hover:from-gray-200 hover:to-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-semibold text-sm mr-2"
+              >
+                ← 上一题
+              </button>
+              
+              {/* 进度显示 */}
+              <div className="flex-shrink-0 px-3">
+                <div className="text-xs text-gray-600 text-center">
+                  <div className="font-semibold">{currentQuestionIndex + 1}/{questions.length}</div>
+                  <div className="text-xs">
+                    {getCurrentQuestionRating().answerRatings.filter(ar => 
+                      ar.scores.length === SCORE_DIMENSIONS.length && 
+                      ar.scores.every(score => score.value > 0)
+                    ).length}/{currentQuestion.answers.length}
+                  </div>
+                </div>
+              </div>
+              
+              {/* 下一题/提交按钮 */}
+              {currentQuestionIndex < questions.length - 1 ? (
+                <button
+                  onClick={goToNextQuestion}
+                  disabled={!isCurrentQuestionComplete()}
+                  className={`flex-1 px-4 py-2 rounded-lg transition-all duration-200 font-semibold text-sm ml-2 ${
+                    isCurrentQuestionComplete()
+                      ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:from-cyan-600 hover:to-blue-700'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
+                >
+                  {isCurrentQuestionComplete() ? '下一题 →' : '请完成评分'}
+                </button>
+              ) : (
+                <button
+                  onClick={submitEvaluation}
+                  className="flex-1 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all duration-200 font-semibold text-sm ml-2"
+                >
+                  ✓ 提交评测
+                </button>
+              )}
+            </div>
+            
+            {/* 快速跳转 - 移动端 */}
+            <div className="mt-3 pt-3 border-t border-gray-200">
+              <div className="flex items-center justify-center mb-2">
+                <span className="text-xs font-semibold text-gray-600">快速跳转</span>
+              </div>
+              <div className="flex justify-center">
+                <div className="grid grid-cols-10 gap-1 max-w-xs">
+                  {questions.map((_, index) => {
+                    const isCompleted = questionRatings.find(qr => qr.questionId === questions[index].id)?.answerRatings.every(ar => 
+                      ar.scores.length === SCORE_DIMENSIONS.length && 
+                      ar.scores.every(score => score.value > 0)
+                    );
+                    
+                    return (
+                      <button
+                        key={index}
+                        onClick={() => setCurrentQuestionIndex(index)}
+                        className={`w-6 h-6 text-xs rounded transition-all duration-200 font-semibold flex items-center justify-center ${
+                          index === currentQuestionIndex
+                            ? 'bg-gradient-to-r from-blue-300 to-cyan-300 text-white'
+                            : isCompleted
+                            ? 'bg-gradient-to-r from-red-100 to-red-200 text-red-800 border border-red-200'
+                            : 'bg-gradient-to-r from-blue-50 to-cyan-50 text-blue-700 border border-blue-100'
                         }`}
                       >
                         {index + 1}
