@@ -60,30 +60,27 @@ export function AnswerRatingCard({
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-blue-100 p-4 transform transition-all duration-300 hover:shadow-md">
-      {/* 答案标题和总分 - 移除图标，使用结果X格式 */}
-      <div className="flex flex-col items-center mb-4">
-        <div className="flex items-center mb-2">
-          <h4 className="font-bold text-lg text-gray-800">结果{answerTitle}</h4>
-        </div>
+      {/* 答案标题和总分 */}
+      <div className="flex items-center justify-between mb-4">
+        <h4 className="font-bold text-lg text-gray-800">结果{answerTitle}</h4>
         <div className="bg-gradient-to-r from-blue-300 to-cyan-300 text-white rounded-lg px-3 py-1 shadow-sm">
           <div className="text-lg font-bold">{averageScore}</div>
         </div>
       </div>
 
-      {/* 各维度评分 - 紧寁布局 */}
+      {/* 各维度评分 - 每个评分项排成一行 */}
       <div className="space-y-3">
         {dimensions.map((dimension, index) => (
-          <div key={dimension.key} className="relative">
-            <div className="flex justify-between items-center mb-1">
-              <div className="flex items-center">
-                <div className={`w-2 h-2 rounded-full mr-2 ${
-                  index === 0 ? 'bg-blue-400' :
-                  index === 1 ? 'bg-green-400' :
-                  index === 2 ? 'bg-amber-400' : 'bg-purple-400'
-                }`}></div>
-                <h5 className="font-semibold text-sm text-gray-800">{dimension.name}</h5>
-              </div>
-              <div className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold ${
+          <div key={dimension.key} className="flex items-center justify-between gap-4">
+            {/* 左侧：维度名称和分数 */}
+            <div className="flex items-center gap-2 min-w-0 flex-1">
+              <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                index === 0 ? 'bg-blue-400' :
+                index === 1 ? 'bg-green-400' :
+                index === 2 ? 'bg-amber-400' : 'bg-purple-400'
+              }`}></div>
+              <h5 className="font-semibold text-sm text-gray-800 truncate">{dimension.name}</h5>
+              <div className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold flex-shrink-0 ${
                 getScoreForDimension(dimension.key) >= 4 ? 'bg-green-100 text-green-800' :
                 getScoreForDimension(dimension.key) >= 3 ? 'bg-amber-100 text-amber-800' :
                 getScoreForDimension(dimension.key) >= 1 ? 'bg-red-100 text-red-800' :
@@ -92,7 +89,9 @@ export function AnswerRatingCard({
                 {getScoreForDimension(dimension.key) || '-'}分
               </div>
             </div>
-            <div className="flex justify-center">
+            
+            {/* 右侧：星级评分 */}
+            <div className="flex-shrink-0">
               <RatingStars
                 value={getScoreForDimension(dimension.key)}
                 onChange={(value) => onScoreChange(dimension.key, value)}
